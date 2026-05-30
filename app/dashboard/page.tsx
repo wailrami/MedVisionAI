@@ -20,6 +20,7 @@ import { GlassCard } from '@/components/ui/glass-card'
 import { DashboardSkeleton } from '@/components/ui/ai-loader'
 import { StaggerContainer, StaggerItem } from '@/components/layout/page-transition'
 import { useAuthStore } from '@/lib/store'
+import { useLanguage } from '@/components/providers/language-provider'
 import { format } from 'date-fns'
 
 interface DashboardStats {
@@ -50,55 +51,11 @@ const mockStats: DashboardStats = {
   ],
 }
 
-const statCards = [
-  {
-    title: 'Total Scans',
-    value: (stats: DashboardStats) => stats.totalScans.toLocaleString(),
-    change: '+12%',
-    changeType: 'positive' as const,
-    icon: FileImage,
-    color: 'text-primary',
-    bgColor: 'bg-primary/10',
-  },
-  {
-    title: 'This Month',
-    value: (stats: DashboardStats) => stats.scansThisMonth.toString(),
-    change: '+8%',
-    changeType: 'positive' as const,
-    icon: TrendingUp,
-    color: 'text-success',
-    bgColor: 'bg-success/10',
-  },
-  {
-    title: 'Pending Reports',
-    value: (stats: DashboardStats) => stats.pendingReports.toString(),
-    change: '-3',
-    changeType: 'neutral' as const,
-    icon: Clock,
-    color: 'text-warning',
-    bgColor: 'bg-warning/10',
-  },
-  {
-    title: 'Avg. Confidence',
-    value: (stats: DashboardStats) => `${stats.avgConfidence}%`,
-    change: '+0.5%',
-    changeType: 'positive' as const,
-    icon: Activity,
-    color: 'text-accent',
-    bgColor: 'bg-accent/10',
-  },
-]
-
-const quickActions = [
-  { title: 'New Analysis', href: '/analysis', icon: Upload, color: 'bg-primary' },
-  { title: 'View History', href: '/history', icon: Brain, color: 'bg-accent' },
-  { title: 'Crowdsource', href: '/crowdsource', icon: Users, color: 'bg-success' },
-]
-
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const { user } = useAuthStore()
+  const { t } = useLanguage()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,16 +89,53 @@ export default function DashboardPage() {
         className="mb-8"
       >
         <h1 className="text-3xl font-bold mb-2">
-          Welcome back, <span className="gradient-text">{user?.fullName?.split(' ')[0] || 'User'}</span>
+          {t('dashboard.welcome')}, <span className="gradient-text">{user?.fullName?.split(' ')[0] || 'User'}</span>
         </h1>
         <p className="text-muted-foreground">
-          Here&apos;s what&apos;s happening with your medical imaging today.
+          {t('dashboard.whatHappening')}
         </p>
       </motion.div>
 
       {/* Stats Grid */}
       <StaggerContainer className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        {statCards.map((card) => (
+        {[
+          {
+            title: t('dashboard.totalScansTitle'),
+            value: (s: DashboardStats) => s.totalScans.toLocaleString(),
+            change: '+12%',
+            changeType: 'positive' as const,
+            icon: FileImage,
+            color: 'text-primary',
+            bgColor: 'bg-primary/10',
+          },
+          {
+            title: t('dashboard.thisMonth'),
+            value: (s: DashboardStats) => s.scansThisMonth.toString(),
+            change: '+8%',
+            changeType: 'positive' as const,
+            icon: TrendingUp,
+            color: 'text-success',
+            bgColor: 'bg-success/10',
+          },
+          {
+            title: t('dashboard.pendingReportsTitle'),
+            value: (s: DashboardStats) => s.pendingReports.toString(),
+            change: '-3',
+            changeType: 'neutral' as const,
+            icon: Clock,
+            color: 'text-warning',
+            bgColor: 'bg-warning/10',
+          },
+          {
+            title: t('dashboard.avgConfidenceTitle'),
+            value: (s: DashboardStats) => `${s.avgConfidence}%`,
+            change: '+0.5%',
+            changeType: 'positive' as const,
+            icon: Activity,
+            color: 'text-accent',
+            bgColor: 'bg-accent/10',
+          },
+        ].map((card) => (
           <StaggerItem key={card.title}>
             <GlassCard className="relative overflow-hidden">
               <div className="flex items-start justify-between">
@@ -153,7 +147,7 @@ export default function DashboardPage() {
                     card.changeType === 'negative' ? 'text-destructive' : 'text-muted-foreground'
                   }`}>
                     {card.changeType === 'positive' && <TrendingUp className="h-4 w-4" />}
-                    <span>{card.change} from last month</span>
+                    <span>{card.change} {t('dashboard.fromLastMonth')}</span>
                   </div>
                 </div>
                 <div className={`p-3 rounded-lg ${card.bgColor}`}>
@@ -173,12 +167,12 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <GlassCard>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">Recent Activity</h2>
+              <h2 className="text-xl font-semibold">{t('dashboard.recentActivityTitle')}</h2>
               <Link
                 href="/history"
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
-                View all
+                {t('dashboard.viewAll')}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
@@ -216,9 +210,13 @@ export default function DashboardPage() {
         <div className="space-y-6">
           {/* Quick Actions */}
           <GlassCard>
-            <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('dashboard.quickActionsTitle')}</h2>
             <div className="space-y-3">
-              {quickActions.map((action) => (
+              {[
+                { title: t('dashboard.newAnalysis'), href: '/analysis', icon: Upload, color: 'bg-primary' },
+                { title: t('dashboard.viewHistoryAction'), href: '/history', icon: Brain, color: 'bg-accent' },
+                { title: t('dashboard.crowdsourceAction'), href: '/crowdsource', icon: Users, color: 'bg-success' },
+              ].map((action) => (
                 <Link key={action.title} href={action.href}>
                   <motion.div
                     whileHover={{ scale: 1.02, x: 4 }}
@@ -238,7 +236,7 @@ export default function DashboardPage() {
 
           {/* Diagnostic Distribution */}
           <GlassCard>
-            <h2 className="text-xl font-semibold mb-4">Scan Distribution</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('dashboard.scanDistribution')}</h2>
             <div className="space-y-4">
               {[
                 { label: 'CT Scans', value: 45, color: 'bg-chart-1' },
@@ -270,7 +268,7 @@ export default function DashboardPage() {
               <div className="p-2 rounded-lg bg-primary/10">
                 <Brain className="h-5 w-5 text-primary" />
               </div>
-              <h2 className="text-xl font-semibold">AI Performance</h2>
+              <h2 className="text-xl font-semibold">{t('dashboard.aiPerformance')}</h2>
             </div>
             <div className="text-center py-4">
               <motion.div
@@ -282,11 +280,11 @@ export default function DashboardPage() {
                 93.2%
               </motion.div>
               <p className="text-sm text-muted-foreground">
-                Diagnostic accuracy this month
+                {t('dashboard.diagnosticAccuracy')}
               </p>
               <div className="mt-4 flex items-center justify-center gap-2 text-success text-sm">
                 <TrendingUp className="h-4 w-4" />
-                <span>+1.3% improvement</span>
+                <span>{t('dashboard.improvement')}</span>
               </div>
             </div>
           </GlassCard>

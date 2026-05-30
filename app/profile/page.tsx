@@ -34,18 +34,21 @@ const themeOptions = [
   { value: 'colorblind', label: 'Color-Blind Friendly' },
 ]
 
-const tabs = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'preferences', label: 'Preferences', icon: Palette },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'billing', label: 'Billing', icon: CreditCard },
+const getTabs = (t: (key: any) => string) => [
+  { id: 'profile', label: t('profile.profileTab'), icon: User },
+  { id: 'preferences', label: t('profile.preferencesTab'), icon: Palette },
+  { id: 'notifications', label: t('profile.notificationsTab'), icon: Bell },
+  { id: 'security', label: t('profile.securityTab'), icon: Shield },
+  { id: 'billing', label: t('profile.billingTab'), icon: CreditCard },
 ]
+
+import { useLanguage } from '@/components/providers/language-provider'
 
 export default function ProfilePage() {
   const router = useRouter()
   const { theme, language, setTheme, setLanguage } = useAppStore()
   const { user, isAuthenticated, logout } = useAuthStore()
+  const { t } = useLanguage()
   
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
@@ -96,7 +99,7 @@ export default function ProfilePage() {
     // Demo mode - simulate save
     setTimeout(() => {
       setSaving(false)
-      setSuccess('Profile updated successfully')
+      setSuccess(t('profile.saved'))
       setTimeout(() => setSuccess(null), 3000)
     }, 500)
   }
@@ -106,7 +109,7 @@ export default function ProfilePage() {
     // Theme and language are already saved via Zustand persist
     setTimeout(() => {
       setSaving(false)
-      setSuccess('Preferences saved successfully')
+      setSuccess(t('profile.saved'))
       setTimeout(() => setSuccess(null), 3000)
     }, 500)
   }
@@ -135,9 +138,9 @@ export default function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold mb-2">Account Settings</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('profile.title')}</h1>
         <p className="text-muted-foreground">
-          Manage your profile, preferences, and account settings
+          {t('profile.subtitle')}
         </p>
       </motion.div>
 
@@ -167,7 +170,7 @@ export default function ProfilePage() {
         <div className="lg:col-span-1">
           <GlassCard className="p-2">
             <nav className="space-y-1">
-              {tabs.map((tab) => (
+              {getTabs(t).map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -187,7 +190,7 @@ export default function ProfilePage() {
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-destructive hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="h-5 w-5" />
-                <span className="font-medium">Sign Out</span>
+                <span className="font-medium">{t('profile.signOut')}</span>
               </button>
             </nav>
           </GlassCard>
@@ -207,7 +210,7 @@ export default function ProfilePage() {
                 <GlassCard>
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                     <User className="h-5 w-5 text-primary" />
-                    Profile Information
+                    {t('profile.personalInfo')}
                   </h2>
 
                   {/* Avatar */}
@@ -223,20 +226,20 @@ export default function ProfilePage() {
                     <div>
                       <h3 className="text-lg font-semibold">{profile.fullName || 'Your Name'}</h3>
                       <p className="text-muted-foreground">{profile.email}</p>
-                      <p className="text-sm text-primary capitalize">{profile.role}</p>
+                      <p className="text-sm text-primary capitalize">{t(("profile." + profile.role) as any)}</p>
                     </div>
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-6">
                     <GlassInput
-                      label="Full Name"
+                      label={t('profile.fullName')}
                       placeholder="Dr. Jane Smith"
                       value={profile.fullName}
                       onChange={(e) => setProfile(prev => ({ ...prev, fullName: e.target.value }))}
                       icon={<User className="h-4 w-4" />}
                     />
                     <GlassInput
-                      label="Email"
+                      label={t('profile.email')}
                       type="email"
                       placeholder="you@hospital.com"
                       value={profile.email}
@@ -244,21 +247,21 @@ export default function ProfilePage() {
                       icon={<Mail className="h-4 w-4" />}
                     />
                     <GlassInput
-                      label="Institution"
+                      label={t('profile.institution')}
                       placeholder="Hospital or Clinic"
                       value={profile.institution}
                       onChange={(e) => setProfile(prev => ({ ...prev, institution: e.target.value }))}
                       icon={<Building2 className="h-4 w-4" />}
                     />
                     <GlassInput
-                      label="Phone"
+                      label={t('profile.phone')}
                       type="tel"
                       placeholder="+1 (555) 000-0000"
                       value={profile.phone}
                       onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
                     />
                     <div className="sm:col-span-2">
-                      <label className="text-sm font-medium text-foreground mb-2 block">Bio</label>
+                      <label className="text-sm font-medium text-foreground mb-2 block">{t('profile.bio')}</label>
                       <textarea
                         className="w-full rounded-lg px-4 py-2.5 glass-subtle bg-input/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200 min-h-[100px] resize-none"
                         placeholder="Tell us about yourself..."
@@ -271,7 +274,7 @@ export default function ProfilePage() {
                   <div className="flex justify-end mt-6">
                     <GlassButton onClick={handleSaveProfile} loading={saving}>
                       <Save className="h-4 w-4" />
-                      Save Changes
+                      {t('profile.save')}
                     </GlassButton>
                   </div>
                 </GlassCard>
@@ -289,19 +292,19 @@ export default function ProfilePage() {
                 <GlassCard>
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                     <Palette className="h-5 w-5 text-primary" />
-                    Display Preferences
+                    {t('profile.displaySettings')}
                   </h2>
 
                   <div className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-6">
                       <GlassSelect
-                        label="Theme"
+                        label={t('profile.theme')}
                         value={theme}
                         onChange={(e) => setTheme(e.target.value as Theme)}
                         options={themeOptions}
                       />
                       <GlassSelect
-                        label="Language"
+                        label={t('profile.language')}
                         value={language}
                         onChange={(e) => setLanguage(e.target.value as Language)}
                         options={languageOptions}
@@ -317,17 +320,17 @@ export default function ProfilePage() {
                         The color-blind friendly theme uses high-contrast colors optimized for deuteranopia and protanopia.
                       </p>
                       <div className="flex gap-4">
-                        {['light', 'dark', 'colorblind'].map((t) => (
+                        {['light', 'dark', 'colorblind'].map((tm) => (
                           <button
-                            key={t}
-                            onClick={() => setTheme(t as Theme)}
+                            key={tm}
+                            onClick={() => setTheme(tm as Theme)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                              theme === t
+                              theme === tm
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-secondary/50 text-muted-foreground hover:text-foreground'
                             }`}
                           >
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
+                            {t((`profile.theme${tm.charAt(0).toUpperCase() + tm.slice(1)}`) as any)}
                           </button>
                         ))}
                       </div>
@@ -337,7 +340,7 @@ export default function ProfilePage() {
                   <div className="flex justify-end mt-6">
                     <GlassButton onClick={handleSavePreferences} loading={saving}>
                       <Save className="h-4 w-4" />
-                      Save Preferences
+                      {t('profile.save')}
                     </GlassButton>
                   </div>
                 </GlassCard>
@@ -355,23 +358,23 @@ export default function ProfilePage() {
                 <GlassCard>
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                     <Bell className="h-5 w-5 text-primary" />
-                    Notification Settings
+                    {t('profile.notificationsTab')}
                   </h2>
 
                   <div className="space-y-4">
                     {[
-                      { key: 'emailAlerts', label: 'Email Alerts', description: 'Receive important alerts via email' },
-                      { key: 'scanComplete', label: 'Scan Complete', description: 'Notify when AI analysis is complete' },
-                      { key: 'weeklyReport', label: 'Weekly Report', description: 'Receive a weekly summary of your activity' },
-                      { key: 'marketingEmails', label: 'Marketing Emails', description: 'Receive product updates and news' },
+                      { key: 'emailAlerts', label: 'profile.emailAlerts', description: 'profile.emailAlerts' },
+                      { key: 'scanComplete', label: 'profile.scanComplete', description: 'profile.scanComplete' },
+                      { key: 'weeklyReport', label: 'profile.weeklyReport', description: 'profile.weeklyReport' },
+                      { key: 'marketingEmails', label: 'profile.marketingEmails', description: 'profile.marketingEmails' },
                     ].map((item) => (
                       <div
                         key={item.key}
                         className="flex items-center justify-between p-4 rounded-lg bg-secondary/30"
                       >
                         <div>
-                          <p className="font-medium">{item.label}</p>
-                          <p className="text-sm text-muted-foreground">{item.description}</p>
+                          <p className="font-medium">{t(item.label as any)}</p>
+                          <p className="text-sm text-muted-foreground">{t(item.description as any)}</p>
                         </div>
                         <button
                           onClick={() => setNotifications(prev => ({
@@ -398,11 +401,11 @@ export default function ProfilePage() {
 
                   <div className="flex justify-end mt-6">
                     <GlassButton onClick={() => {
-                      setSuccess('Notification preferences saved')
+                      setSuccess(t('profile.saved'))
                       setTimeout(() => setSuccess(null), 3000)
                     }}>
                       <Save className="h-4 w-4" />
-                      Save Notifications
+                      {t('profile.save')}
                     </GlassButton>
                   </div>
                 </GlassCard>
@@ -420,17 +423,17 @@ export default function ProfilePage() {
                 <GlassCard>
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                     <Shield className="h-5 w-5 text-primary" />
-                    Security Settings
+                    {t('profile.securityTab')}
                   </h2>
 
                   <div className="space-y-6">
                     <div className="p-4 rounded-lg bg-secondary/30">
-                      <h3 className="font-medium mb-2">Change Password</h3>
+                      <h3 className="font-medium mb-2">{t('profile.changePassword')}</h3>
                       <p className="text-sm text-muted-foreground mb-4">
                         Update your password to keep your account secure.
                       </p>
                       <GlassButton variant="secondary" size="sm">
-                        Change Password
+                        {t('profile.changePassword')}
                       </GlassButton>
                     </div>
 
@@ -473,13 +476,13 @@ export default function ProfilePage() {
                 <GlassCard>
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                     <CreditCard className="h-5 w-5 text-primary" />
-                    Billing & Subscription
+                    {t('profile.billingTab')}
                   </h2>
 
                   <div className="space-y-6">
                     <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold">Professional Plan</h3>
+                        <h3 className="font-semibold">{t('profile.currentPlan')}</h3>
                         <span className="text-sm px-2 py-1 rounded bg-success/20 text-success">Active</span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">

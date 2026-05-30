@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { GlassCard, GlassButton, GlassInput } from '@/components/ui/glass-card'
 import { StaggerContainer, StaggerItem, FadeInOnScroll } from '@/components/layout/page-transition'
+import { useLanguage } from '@/components/providers/language-provider'
 
 const plans = [
   {
@@ -104,6 +105,7 @@ export default function PricingPage() {
     company: '',
     message: '',
   })
+  const { t } = useLanguage()
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -128,10 +130,10 @@ export default function PricingPage() {
           className="text-center mb-12"
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Tarification <span className="gradient-text">Transparente</span>
+            {t('pricing.transparentPricing')} <span className="gradient-text"></span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Choisissez le forfait adapte a votre pratique. Contactez-nous pour les tarifs en DZD.
+            {t('pricing.contactDZD')}
           </p>
 
           {/* Billing Toggle */}
@@ -144,7 +146,7 @@ export default function PricingPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Monthly
+              {t('pricing.month')}
             </button>
             <button
               onClick={() => setBillingPeriod('yearly')}
@@ -154,9 +156,9 @@ export default function PricingPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Yearly
+              {t('pricing.year')}
               <span className="ml-2 text-xs bg-success/20 text-success px-2 py-0.5 rounded-full">
-                Save 20%
+                {t('pricing.save')}
               </span>
             </button>
           </div>
@@ -173,7 +175,7 @@ export default function PricingPage() {
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="px-4 py-1 bg-primary text-primary-foreground text-sm font-medium rounded-full">
-                      Most Popular
+                      {t('pricing.mostPopular')}
                     </span>
                   </div>
                 )}
@@ -189,9 +191,9 @@ export default function PricingPage() {
                 </div>
 
                 <div className="mb-6">
-                  <div className="text-2xl font-bold text-primary">Contactez-nous</div>
+                  <div className="text-2xl font-bold text-primary">{t('contact.title')}</div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Tarifs en DZD sur demande
+                    {t('pricing.contactDZD')}
                   </p>
                 </div>
 
@@ -215,7 +217,7 @@ export default function PricingPage() {
                   className="w-full"
                   onClick={() => setShowContactModal(true)}
                 >
-                  Demander un Devis
+                  {t('pricing.requestQuote')}
                   <ArrowRight className="h-4 w-4" />
                 </GlassButton>
               </GlassCard>
@@ -226,7 +228,7 @@ export default function PricingPage() {
         {/* FAQs */}
         <FadeInOnScroll>
           <GlassCard className="max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-8">Questions Frequentes</h2>
+            <h2 className="text-2xl font-bold text-center mb-8">{t('pricing.frequentQuestions')}</h2>
             <div className="space-y-6">
               {faqs.map((faq, index) => (
                 <motion.div
@@ -264,7 +266,7 @@ export default function PricingPage() {
               >
                 <GlassCard variant="strong">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold">Contact Sales</h2>
+                    <h2 className="text-xl font-semibold">{t('pricing.contactSalesTitle')}</h2>
                     <button
                       onClick={() => setShowContactModal(false)}
                       className="p-2 rounded-lg hover:bg-secondary/50"
@@ -275,7 +277,7 @@ export default function PricingPage() {
 
                   <form onSubmit={handleContactSubmit} className="space-y-4">
                     <GlassInput
-                      label="Full Name"
+                      label={t('contact.fullName')}
                       placeholder="Dr. Jane Smith"
                       value={contactForm.name}
                       onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -283,7 +285,7 @@ export default function PricingPage() {
                       required
                     />
                     <GlassInput
-                      label="Email"
+                      label={t('contact.title')}
                       type="email"
                       placeholder="jane@hospital.com"
                       value={contactForm.email}
@@ -292,7 +294,7 @@ export default function PricingPage() {
                       required
                     />
                     <GlassInput
-                      label="Company/Institution"
+                      label={t('contact.company')}
                       placeholder="City General Hospital"
                       value={contactForm.company}
                       onChange={(e) => setContactForm((prev) => ({ ...prev, company: e.target.value }))}
@@ -300,17 +302,17 @@ export default function PricingPage() {
                       required
                     />
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Message</label>
+                      <label className="text-sm font-medium">{t('contact.message')}</label>
                       <textarea
                         className="w-full rounded-lg px-4 py-2.5 glass-subtle bg-input/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[100px] resize-none"
-                        placeholder="Tell us about your needs..."
+                        placeholder={t('contact.sendMessage')}
                         value={contactForm.message}
                         onChange={(e) => setContactForm((prev) => ({ ...prev, message: e.target.value }))}
                         required
                       />
                     </div>
                     <GlassButton type="submit" className="w-full">
-                      Send Message
+                      {t('pricing.sendMessage')}
                       <ArrowRight className="h-4 w-4" />
                     </GlassButton>
                   </form>

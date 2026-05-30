@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { GlassCard, GlassButton, GlassInput, GlassSelect } from '@/components/ui/glass-card'
 import { StaggerContainer, StaggerItem, FadeInOnScroll } from '@/components/layout/page-transition'
+import { useLanguage } from '@/components/providers/language-provider'
 
 const contactInfo = [
   {
@@ -86,6 +87,7 @@ export default function ContactPage() {
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const { t } = useLanguage()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -126,18 +128,22 @@ export default function ContactPage() {
           className="text-center mb-12"
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Get in <span className="gradient-text">Touch</span>
+            {t('contact.title')} <span className="gradient-text"></span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Have questions about MedVision AI? Our team is here to help. 
-            Reach out and we&apos;ll respond as soon as we can.
+            {t('contact.subtitle')}
           </p>
         </motion.div>
 
         {/* Contact Info Cards */}
         <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-          {contactInfo.map((item) => (
-            <StaggerItem key={item.label}>
+          {[
+            { icon: Mail, label: t('contact.title'), value: 'contact@medvision-dz.ai', description: t('contact.sendMessage') },
+            { icon: Phone, label: 'Telephone', value: '+213 (0) 555 12 34 56', description: 'Dim-Jeu, 8h-17h' },
+            { icon: MapPin, label: 'Bureau', value: 'Cite 500 Logements, Bloc A', description: 'Alger, Algerie' },
+            { icon: Clock, label: 'Support', value: 'Support Prioritaire', description: 'Dim-Jeu 8h-17h' },
+          ].map((item, idx) => (
+            <StaggerItem key={idx}>
               <GlassCard className="text-center h-full">
                 <div className="p-3 rounded-lg bg-primary/10 w-fit mx-auto mb-4">
                   <item.icon className="h-6 w-6 text-primary" />
@@ -164,25 +170,25 @@ export default function ContactPage() {
                     <div className="p-4 rounded-full bg-success/20 w-fit mx-auto mb-6">
                       <CheckCircle2 className="h-12 w-12 text-success" />
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">Message Sent!</h2>
+                    <h2 className="text-2xl font-bold mb-2">{t('contact.messageSent')}</h2>
                     <p className="text-muted-foreground mb-6">
-                      Thank you for reaching out. We&apos;ll get back to you within 24 hours.
+                      {t('contact.thankYou')}
                     </p>
                     <GlassButton onClick={() => setSuccess(false)}>
-                      Send Another Message
+                      {t('contact.sendAnother')}
                     </GlassButton>
                   </motion.div>
                 ) : (
                   <>
                     <div className="flex items-center gap-3 mb-6">
                       <MessageSquare className="h-6 w-6 text-primary" />
-                      <h2 className="text-xl font-semibold">Send us a Message</h2>
+                      <h2 className="text-xl font-semibold">{t('contact.sendMessage')}</h2>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                       <div className="grid sm:grid-cols-2 gap-4">
                         <GlassInput
-                          label="Nom Complet"
+                          label={t('contact.fullName')}
                           name="name"
                           placeholder="Dr. Ahmed Benali"
                           value={formData.name}
@@ -190,7 +196,7 @@ export default function ContactPage() {
                           required
                         />
                         <GlassInput
-                          label="Email"
+                          label={t('contact.title')}
                           name="email"
                           type="email"
                           placeholder="vous@clinique.dz"
@@ -203,7 +209,7 @@ export default function ContactPage() {
 
                       <div className="grid sm:grid-cols-2 gap-4">
                         <GlassInput
-                          label="Company / Institution"
+                          label={t('contact.company')}
                           name="company"
                           placeholder="Hospital or Clinic"
                           value={formData.company}
@@ -211,16 +217,22 @@ export default function ContactPage() {
                           icon={<Building2 className="h-4 w-4" />}
                         />
                         <GlassSelect
-                          label="Inquiry Type"
+                          label={t('contact.inquiryType')}
                           name="inquiryType"
                           value={formData.inquiryType}
                           onChange={handleChange}
-                          options={inquiryTypes}
+                          options={[
+                            { value: 'general', label: t('contact.generalInquiry') },
+                            { value: 'sales', label: t('contact.sales') },
+                            { value: 'support', label: t('contact.support') },
+                            { value: 'partnership', label: t('contact.partnership') },
+                            { value: 'media', label: t('contact.media') },
+                          ]}
                         />
                       </div>
 
                       <GlassInput
-                        label="Subject"
+                        label={t('contact.subject')}
                         name="subject"
                         placeholder="How can we help you?"
                         value={formData.subject}
@@ -230,7 +242,7 @@ export default function ContactPage() {
 
                       <div>
                         <label className="text-sm font-medium text-foreground mb-2 block">
-                          Message
+                          {t('contact.message')}
                         </label>
                         <textarea
                           name="message"
@@ -244,7 +256,7 @@ export default function ContactPage() {
 
                       <GlassButton type="submit" className="w-full" size="lg" loading={loading}>
                         <Send className="h-4 w-4" />
-                        Send Message
+                        {t('contact.sendMessage')}
                       </GlassButton>
                     </form>
                   </>
@@ -257,9 +269,13 @@ export default function ContactPage() {
           <div className="lg:col-span-2 space-y-6">
             <FadeInOnScroll>
               <GlassCard>
-                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+                <h3 className="text-lg font-semibold mb-4">{t('contact.quickLinks')}</h3>
                 <div className="space-y-3">
-                  {quickLinks.map((link) => (
+                  {[
+                    { icon: HelpCircle, title: t('contact.helpCenter'), description: t('contact.browseKB'), href: '#' },
+                    { icon: FileText, title: t('contact.documentation'), description: t('contact.techGuides'), href: '#' },
+                    { icon: Users, title: t('contact.community'), description: t('contact.radiologistCommunity'), href: '#' },
+                  ].map((link) => (
                     <a
                       key={link.title}
                       href={link.href}
@@ -283,7 +299,7 @@ export default function ContactPage() {
 
             <FadeInOnScroll>
               <GlassCard>
-                <h3 className="text-lg font-semibold mb-4">Office Location</h3>
+                <h3 className="text-lg font-semibold mb-4">{t('contact.officeLocation')}</h3>
                 {/* Placeholder map */}
                 <div className="aspect-video rounded-lg bg-secondary/50 flex items-center justify-center overflow-hidden relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
@@ -296,7 +312,7 @@ export default function ContactPage() {
                 <div className="mt-4 flex gap-2">
                   <GlassButton variant="secondary" size="sm" className="flex-1">
                     <MapPin className="h-4 w-4" />
-                    Get Directions
+                    {t('contact.getDirections')}
                   </GlassButton>
                 </div>
               </GlassCard>
@@ -304,12 +320,12 @@ export default function ContactPage() {
 
             <FadeInOnScroll>
               <GlassCard className="bg-primary/5 border-primary/20">
-                <h3 className="text-lg font-semibold mb-2">Enterprise Support</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('contact.enterpriseSupport')}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Need priority support? Enterprise customers get dedicated account managers and 24/7 technical assistance.
+                  {t('contact.enterpriseDesc')}
                 </p>
                 <GlassButton size="sm">
-                  Contact Enterprise Sales
+                  {t('contact.contactEnterprise')}
                   <ArrowRight className="h-4 w-4" />
                 </GlassButton>
               </GlassCard>
@@ -321,17 +337,17 @@ export default function ContactPage() {
         <FadeInOnScroll>
           <div className="mt-16 text-center">
             <GlassCard variant="strong" className="inline-block max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold mb-2">Looking for Quick Answers?</h2>
+              <h2 className="text-2xl font-bold mb-2">{t('contact.lookingAnswers')}</h2>
               <p className="text-muted-foreground mb-6">
-                Check out our pricing page for plan details or browse our FAQ section for common questions.
+                {t('contact.checkPricing')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <GlassButton onClick={() => window.location.href = '/pricing'}>
-                  View Pricing
+                  {t('contact.viewPricing')}
                   <ArrowRight className="h-4 w-4" />
                 </GlassButton>
                 <GlassButton variant="secondary" onClick={() => window.location.href = '/pricing#faq'}>
-                  Browse FAQ
+                  {t('contact.browseFAQ')}
                 </GlassButton>
               </div>
             </GlassCard>

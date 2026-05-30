@@ -6,48 +6,31 @@ import { Brain, Scan, Shield, Zap, Users, Globe, ChevronRight, Play, ArrowRight 
 import { GlassCard, GlassButton } from '@/components/ui/glass-card'
 import { FadeInOnScroll, StaggerContainer, StaggerItem } from '@/components/layout/page-transition'
 import { BrainActivity } from '@/components/ui/ai-loader'
+import { useLanguage } from '@/components/providers/language-provider'
 
-const features = [
-  {
-    icon: Brain,
-    title: 'AI-Powered Analysis',
-    description: 'Advanced deep learning algorithms analyze medical images with over 97% accuracy, detecting abnormalities humans might miss.',
-  },
-  {
-    icon: Scan,
-    title: '3D Visualization',
-    description: 'Interactive 3D rendering of CT, MRI, and PET scans with real-time manipulation and measurement tools.',
-  },
-  {
-    icon: Shield,
-    title: 'Secure & Private',
-    description: 'Enterprise-grade security with end-to-end encryption, ensuring patient data privacy and protection.',
-  },
-  {
-    icon: Zap,
-    title: 'Instant Results',
-    description: 'Get AI-generated preliminary reports in seconds, not hours. Accelerate your diagnostic workflow.',
-  },
-  {
-    icon: Users,
-    title: 'Crowdsourced Validation',
-    description: 'Earn rewards by validating AI findings. Build consensus with a global network of radiologists.',
-  },
-  {
-    icon: Globe,
-    title: 'Multi-Language Reports',
-    description: 'Generate comprehensive reports in English, French, and Arabic with a single click.',
-  },
-]
 
-const stats = [
-  { value: '94.5%', label: 'Diagnostic Accuracy' },
-  { value: '2,500+', label: 'Scans Analyzed' },
-  { value: '3.2s', label: 'Avg. Processing Time' },
-  { value: '12+', label: 'Partner Clinics' },
-]
+
+// Features will be populated dynamically with translations
+// Static feature icons mapping
+const featureIcons = [
+  { icon: Brain, key: 'landing.features.aiPowered' },
+  { icon: Scan, key: 'landing.features.3dViz' },
+  { icon: Shield, key: 'landing.features.secure' },
+  { icon: Zap, key: 'landing.features.instant' },
+  { icon: Users, key: 'landing.features.crowdsource' },
+  { icon: Globe, key: 'landing.features.multiLang' },
+] as const
+
+const statsKeys = [
+  { valueKey: '94.5%', labelKey: 'landing.stats.accuracy' as const },
+  { valueKey: '2,500+', labelKey: 'landing.stats.scansCount' as const },
+  { valueKey: '3.2s', labelKey: 'landing.stats.processingTime' as const },
+  { valueKey: '12+', labelKey: 'landing.stats.partners' as const },
+] as const
 
 export default function LandingPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="relative overflow-hidden">
       {/* Background Effects */}
@@ -69,44 +52,42 @@ export default function LandingPage() {
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-subtle text-sm">
                 <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                <span className="text-muted-foreground">Now with GPT-5 Vision Integration</span>
+                <span className="text-muted-foreground">{t('landing.hero.tagline')}</span>
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-balance">
-                <span className="gradient-text">AI-Powered</span>{' '}
-                Medical Imaging for the Future
+                <span className="gradient-text">{t('landing.hero.title2').split('Medical')[0].trim()}</span>{' '}
+                {t('landing.hero.title2').split('Medical')[1]}
               </h1>
 
               <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                Transform your radiology practice with cutting-edge AI diagnostics, 
-                3D visualization, and collaborative workflows. Faster, more accurate, 
-                and fully compliant.
+                {t('landing.hero.description')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/auth/sign-up">
                   <GlassButton size="lg" className="w-full sm:w-auto group">
-                    Start Free Trial
+                    {t('landing.hero.startTrial')}
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </GlassButton>
                 </Link>
                 <Link href="#demo">
                   <GlassButton variant="secondary" size="lg" className="w-full sm:w-auto">
                     <Play className="h-5 w-5" />
-                    Watch Demo
+                    {t('landing.hero.watchDemo')}
                   </GlassButton>
                 </Link>
               </div>
 
               {/* Trust badges */}
-              <div className="pt-8 border-t border-border">
+              {/* <div className="pt-8 border-t border-border">
                 <p className="text-sm text-muted-foreground mb-4">En collaboration avec des institutions de sante</p>
                 <div className="flex flex-wrap gap-6 items-center opacity-60">
                   {['CHU Mustapha', 'Clinique El-Azhar', 'EPH Kouba', 'Clinique Debussy'].map((name) => (
                     <span key={name} className="text-sm font-medium text-foreground">{name}</span>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </motion.div>
 
             {/* Right Visual */}
@@ -185,17 +166,17 @@ export default function LandingPage() {
         <div className="container mx-auto max-w-6xl">
           <FadeInOnScroll>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {stats.map((stat, index) => (
+              {statsKeys.map((stat, index) => (
                 <motion.div
-                  key={stat.label}
+                  key={stat.labelKey}
                   className="text-center p-6 rounded-xl glass"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <p className="text-3xl md:text-4xl font-bold gradient-text">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground mt-2">{stat.label}</p>
+                  <p className="text-3xl md:text-4xl font-bold gradient-text">{stat.valueKey}</p>
+                  <p className="text-sm text-muted-foreground mt-2">{t(stat.labelKey)}</p>
                 </motion.div>
               ))}
             </div>
@@ -209,25 +190,30 @@ export default function LandingPage() {
           <FadeInOnScroll>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Everything You Need for{' '}
-                <span className="gradient-text">Modern Radiology</span>
+                {t('landing.features.modern')}{' '}
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Comprehensive tools designed by radiologists, for radiologists. 
-                Streamline your workflow and improve patient outcomes.
+                {t('landing.features.description')}
               </p>
             </div>
           </FadeInOnScroll>
 
           <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => (
-              <StaggerItem key={feature.title}>
+            {featureIcons.map((feature) => (
+              <StaggerItem key={feature.key}>
                 <GlassCard hover className="h-full">
                   <div className="p-2 w-fit rounded-lg bg-primary/10 mb-4">
                     <feature.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <h3 className="text-xl font-semibold mb-2">{t(feature.key)}</h3>
+                  <p className="text-muted-foreground">
+                    {feature.key === 'landing.features.aiPowered' && t('landing.features.aiDesc')}
+                    {feature.key === 'landing.features.3dViz' && t('landing.features.3dDesc')}
+                    {feature.key === 'landing.features.secure' && t('landing.features.secureDesc')}
+                    {feature.key === 'landing.features.instant' && t('landing.features.instantDesc')}
+                    {feature.key === 'landing.features.crowdsource' && t('landing.features.crowdsourceDesc')}
+                    {feature.key === 'landing.features.multiLang' && t('landing.features.multiLangDesc')}
+                  </p>
                 </GlassCard>
               </StaggerItem>
             ))}
@@ -243,28 +229,27 @@ export default function LandingPage() {
               <div className="grid lg:grid-cols-2 gap-8 items-center">
                 <div className="space-y-6">
                   <h2 className="text-3xl md:text-4xl font-bold">
-                    See MedVision AI in Action
+                    {t('landing.demo.title')}
                   </h2>
                   <p className="text-muted-foreground">
-                    Watch how our AI analyzes a chest CT scan in real-time, 
-                    detecting potential abnormalities and generating a comprehensive report.
+                    {t('landing.demo.description')}
                   </p>
                   <ul className="space-y-3">
                     {[
-                      'Upload DICOM or NiFTI files',
-                      'AI processes in under 3 seconds',
-                      'Interactive 3D visualization',
-                      'Detailed findings with confidence scores',
-                    ].map((item) => (
-                      <li key={item} className="flex items-center gap-3">
+                      'landing.demo.upload' as const,
+                      'landing.demo.process' as const,
+                      'landing.demo.interactive' as const,
+                      'landing.demo.findings' as const,
+                    ].map((key) => (
+                      <li key={key} className="flex items-center gap-3">
                         <ChevronRight className="h-5 w-5 text-primary" />
-                        <span>{item}</span>
+                        <span>{t(key)}</span>
                       </li>
                     ))}
                   </ul>
                   <Link href="/auth/sign-up">
                     <GlassButton className="mt-4">
-                      Try It Yourself
+                      {t('landing.demo.cta')}
                       <ArrowRight className="h-5 w-5" />
                     </GlassButton>
                   </Link>
@@ -298,22 +283,21 @@ export default function LandingPage() {
           <FadeInOnScroll>
             <GlassCard variant="strong" className="text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Ready to Transform Your Practice?
+                {t('landing.cta.title')}
               </h2>
               <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join thousands of radiologists already using MedVision AI. 
-                Start your 14-day free trial today - no credit card required.
+                {t('landing.cta.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/sign-up">
                   <GlassButton size="lg">
-                    Start Free Trial
+                    {t('landing.cta.startTrial')}
                     <ArrowRight className="h-5 w-5" />
                   </GlassButton>
                 </Link>
                 <Link href="/contact">
                   <GlassButton variant="secondary" size="lg">
-                    Contact Sales
+                    {t('landing.cta.contactSales')}
                   </GlassButton>
                 </Link>
               </div>
@@ -332,37 +316,37 @@ export default function LandingPage() {
                 <span className="font-bold text-lg">MedVision AI</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                AI-powered medical imaging for the future of healthcare.
+                {t('landing.hero.description').split('.')[0]}.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
+              <h4 className="font-semibold mb-4">{t('footer.product')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#features" className="hover:text-foreground transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
-                <li><Link href="#demo" className="hover:text-foreground transition-colors">Demo</Link></li>
+                <li><Link href="#features" className="hover:text-foreground transition-colors">{t('landing.features.modern').split(' ')[0]}</Link></li>
+                <li><Link href="/pricing" className="hover:text-foreground transition-colors">{t('pricing.title')}</Link></li>
+                <li><Link href="#demo" className="hover:text-foreground transition-colors">{t('landing.features.demo')}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
+              <h4 className="font-semibold mb-4">{t('footer.company')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
-                <li><Link href="#" className="hover:text-foreground transition-colors">About</Link></li>
-                <li><Link href="#" className="hover:text-foreground transition-colors">Careers</Link></li>
+                <li><Link href="/contact" className="hover:text-foreground transition-colors">{t('contact.title')}</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">{t('footer.about')}</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">{t('footer.careers')}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <h4 className="font-semibold mb-4">{t('footer.legal')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">{t('footer.privacy')}</Link></li>
+                <li><Link href="#" className="hover:text-foreground transition-colors">{t('footer.terms')}</Link></li>
                 <li><Link href="#" className="hover:text-foreground transition-colors">Data Protection</Link></li>
               </ul>
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              2024 MedVision AI. All rights reserved.
+              {t('footer.copyright')}
             </p>
             <div className="flex items-center gap-4">
               <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">

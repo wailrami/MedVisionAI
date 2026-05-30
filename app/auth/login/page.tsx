@@ -7,10 +7,12 @@ import { motion } from 'framer-motion'
 import { Brain, Mail, Lock, ArrowRight, AlertCircle, Info } from 'lucide-react'
 import { GlassCard, GlassButton, GlassInput } from '@/components/ui/glass-card'
 import { useAuthStore } from '@/lib/store'
+import { useLanguage } from '@/components/providers/language-provider'
 
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuthStore()
+  const { t } = useLanguage()
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -77,8 +79,8 @@ export default function LoginPage() {
 
         <GlassCard variant="strong">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-            <p className="text-muted-foreground">Sign in to access your dashboard</p>
+            <h1 className="text-2xl font-bold mb-2">{t('auth.welcomeBack')}</h1>
+            <p className="text-muted-foreground">{t('auth.signInAccess')}</p>
           </div>
 
           {/* Demo Mode Notice */}
@@ -89,9 +91,9 @@ export default function LoginPage() {
           >
             <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-medium text-primary mb-1">Demo Mode Active</p>
+              <p className="font-medium text-primary mb-1">{t('auth.demoModeActive')}</p>
               <p className="text-muted-foreground">
-                Use <span className="font-mono text-xs bg-background/50 px-1 rounded">demo@medvision.ai</span> / <span className="font-mono text-xs bg-background/50 px-1 rounded">demo123</span> or click the button below.
+                {t('auth.demoModeDesc')}
               </p>
             </div>
           </motion.div>
@@ -109,7 +111,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <GlassInput
-              label="Email"
+              label={t('auth.email')}
               type="email"
               placeholder="you@hospital.com"
               value={email}
@@ -120,7 +122,7 @@ export default function LoginPage() {
 
             <div>
               <GlassInput
-                label="Password"
+                label={t('auth.password')}
                 type="password"
                 placeholder="Enter your password"
                 value={password}
@@ -133,7 +135,7 @@ export default function LoginPage() {
                   href="/auth/forgot-password"
                   className="text-sm text-primary hover:underline"
                 >
-                  Forgot password?
+                  {t('auth.forgotPassword')}
                 </Link>
               </div>
             </div>
@@ -144,7 +146,7 @@ export default function LoginPage() {
               size="lg"
               loading={loading}
             >
-              Sign In
+              {t('auth.login')}
               <ArrowRight className="h-5 w-5" />
             </GlassButton>
 
@@ -165,15 +167,15 @@ export default function LoginPage() {
               onClick={handleDemoLogin}
               loading={loading}
             >
-              Quick Demo Login
+              {t('auth.tryDemo')}
             </GlassButton>
           </form>
 
           <div className="mt-8 pt-6 border-t border-border text-center">
             <p className="text-muted-foreground">
-              Don&apos;t have an account?{' '}
+              {t('auth.dontHaveAccount')}{' '}
               <Link href="/auth/sign-up" className="text-primary hover:underline font-medium">
-                Sign up
+                {t('auth.createAccount')}
               </Link>
             </p>
           </div>

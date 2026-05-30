@@ -137,15 +137,15 @@ const fakeAnalysisResult: AnalysisResult = {
   }
 }
 
-const modalities = [
-  { value: "mri", label: "IRM (MRI)" },
-  { value: "ct", label: "Scanner (CT)" },
-  { value: "xray", label: "Radiographie (X-Ray)" },
-  { value: "pet", label: "PET Scan" },
-  { value: "ultrasound", label: "Echographie" },
+const getModalities = (t: (key: any) => string) => [
+  { value: "mri", label: t('analysis.mri') },
+  { value: "ct", label: t('analysis.ct') },
+  { value: "xray", label: t('analysis.xray') },
+  { value: "pet", label: t('analysis.pet') },
+  { value: "ultrasound", label: t('analysis.ultrasound') },
 ]
 
-const bodyRegions = [
+const getBodyRegions = (t: (key: any) => string) => [
   { value: "brain", label: "Cerveau / Brain" },
   { value: "chest", label: "Thorax / Chest" },
   { value: "abdomen", label: "Abdomen" },
@@ -162,7 +162,7 @@ const reportLanguages = [
   { value: "ar", label: "العربية" },
 ]
 
-function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: PatientInfo) => void }) {
+function UploadStage({ onUpload, t }: { onUpload: (files: File[], patientInfo: PatientInfo) => void, t: ReturnType<typeof useLanguage>["t"] }) {
   const [patientInfo, setPatientInfo] = useState<PatientInfo>({
     fullName: "",
     age: "",
@@ -201,7 +201,7 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 mb-4">
             <Brain className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">Analyse IA des Images Medicales</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('analysis.title')}</h1>
           <p className="text-muted-foreground">
             Remplissez les informations patient puis televersez vos fichiers
           </p>
@@ -211,11 +211,11 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
         <GlassCard className="mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <User className="w-5 h-5 text-primary" />
-            Informations du Patient
+            {t('analysis.step1')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Nom Complet *</Label>
+              <Label htmlFor="fullName">{t('analysis.patientName')} *</Label>
               <Input
                 id="fullName"
                 placeholder="Ex: Ahmed Benali"
@@ -225,7 +225,7 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
+                <Label htmlFor="age">{t('analysis.patientAge')}</Label>
                 <Input
                   id="age"
                   type="number"
@@ -235,7 +235,7 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gender">Sexe</Label>
+                <Label htmlFor="gender">{t('analysis.gender')}</Label>
                 <Select
                   value={patientInfo.gender}
                   onValueChange={(value) => setPatientInfo(prev => ({ ...prev, gender: value as "male" | "female" }))}
@@ -244,14 +244,14 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
                     <SelectValue placeholder="Choisir" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Homme</SelectItem>
-                    <SelectItem value="female">Femme</SelectItem>
+                    <SelectItem value="male">{t('analysis.male')}</SelectItem>
+                    <SelectItem value="female">{t('analysis.female')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="modality">Modalite *</Label>
+              <Label htmlFor="modality">{t('analysis.modality')} *</Label>
               <Select
                 value={patientInfo.modality}
                 onValueChange={(value) => setPatientInfo(prev => ({ ...prev, modality: value }))}
@@ -260,14 +260,14 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
                   <SelectValue placeholder="Choisir la modalite" />
                 </SelectTrigger>
                 <SelectContent>
-                  {modalities.map((m) => (
+                  {getModalities(t).map((m) => (
                     <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bodyRegion">Region Anatomique *</Label>
+              <Label htmlFor="bodyRegion">{t('analysis.bodyRegion')} *</Label>
               <Select
                 value={patientInfo.bodyRegion}
                 onValueChange={(value) => setPatientInfo(prev => ({ ...prev, bodyRegion: value }))}
@@ -276,7 +276,7 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
                   <SelectValue placeholder="Choisir la region" />
                 </SelectTrigger>
                 <SelectContent>
-                  {bodyRegions.map((r) => (
+                  {getBodyRegions(t).map((r) => (
                     <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -285,7 +285,7 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
             <div className="space-y-2">
               <Label htmlFor="reportLanguage" className="flex items-center gap-2">
                 <Languages className="w-4 h-4" />
-                Langue du Rapport
+                {t('analysis.reportLanguage')}
               </Label>
               <Select
                 value={patientInfo.reportLanguage}
@@ -334,12 +334,12 @@ function UploadStage({ onUpload }: { onUpload: (files: File[], patientInfo: Pati
               {!canUpload 
                 ? "Remplissez les champs obligatoires (*)" 
                 : isDragActive 
-                  ? "Deposez les fichiers ici" 
-                  : "Glissez-deposez vos fichiers"
+                  ? t('analysis.dragDrop')
+                  : t('analysis.dragDrop')
               }
             </h3>
             <p className="text-muted-foreground mb-4">
-              ou cliquez pour parcourir vos fichiers
+              {t('analysis.orClick')}
             </p>
             
             <div className="flex flex-wrap justify-center gap-2">
@@ -603,7 +603,10 @@ function ResultsStage({ result }: { result: AnalysisResult }) {
   )
 }
 
+import { useLanguage } from '@/components/providers/language-provider'
+
 export default function AnalysisPage() {
+  const { t } = useLanguage()
   const [stage, setStage] = useState<AnalysisStage>("upload")
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState<AnalysisResult | null>(null)
@@ -623,7 +626,7 @@ export default function AnalysisPage() {
             patientInfo,
             metadata: {
               ...fakeAnalysisResult.metadata,
-              scanType: modalities.find(m => m.value === patientInfo.modality)?.label || fakeAnalysisResult.metadata.scanType
+              scanType: getModalities(t).find(m => m.value === patientInfo.modality)?.label || fakeAnalysisResult.metadata.scanType
             }
           }
           setResult(resultWithPatient)
@@ -645,7 +648,7 @@ export default function AnalysisPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <UploadStage onUpload={handleUpload} />
+              <UploadStage onUpload={handleUpload} t={t} />
             </motion.div>
           )}
           

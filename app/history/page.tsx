@@ -143,24 +143,27 @@ const mockData: ScanRecord[] = [
   },
 ]
 
-const modalityFilters = [
-  { value: 'all', label: 'Toutes Modalites' },
-  { value: 'CT', label: 'Scanner (CT)' },
-  { value: 'MRI', label: 'IRM' },
-  { value: 'X-Ray', label: 'Radiographie' },
-  { value: 'PET', label: 'PET Scan' },
-  { value: 'Ultrasound', label: 'Echographie' },
+const getModalityFilters = (t: (key: string) => string) => [
+  { value: 'all', label: t('history.allModalities') },
+  { value: 'CT', label: t('analysis.ct') },
+  { value: 'MRI', label: t('analysis.mri') },
+  { value: 'X-Ray', label: t('analysis.xray') },
+  { value: 'PET', label: t('analysis.pet') },
+  { value: 'Ultrasound', label: t('analysis.ultrasound') },
 ]
 
-const statusFilters = [
-  { value: 'all', label: 'Tous Statuts' },
-  { value: 'completed', label: 'Termine' },
-  { value: 'pending', label: 'En attente' },
-  { value: 'processing', label: 'En cours' },
-  { value: 'failed', label: 'Echoue' },
+const getStatusFilters = (t: (key: string) => string) => [
+  { value: 'all', label: t('history.allStatuses') },
+  { value: 'completed', label: t('history.completed') },
+  { value: 'pending', label: t('history.pending') },
+  { value: 'processing', label: t('history.processing') },
+  { value: 'failed', label: t('history.failed') },
 ]
+
+import { useLanguage } from '@/components/providers/language-provider'
 
 export default function HistoryPage() {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [modalityFilter, setModalityFilter] = useState('all')
@@ -251,9 +254,9 @@ export default function HistoryPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold mb-2">Historique des Scans</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('history.title')}</h1>
         <p className="text-muted-foreground">
-          Consultez et gerez vos dossiers d&apos;imagerie medicale
+          {t('common.loading')}
         </p>
       </motion.div>
 
@@ -264,7 +267,7 @@ export default function HistoryPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Rechercher par nom, ID, ou diagnostic..."
+              placeholder={t('history.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 rounded-lg glass-subtle bg-input/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -278,19 +281,19 @@ export default function HistoryPage() {
               className="lg:hidden"
             >
               <Filter className="h-4 w-4" />
-              Filters
+              {t('history.filter')}
             </GlassButton>
             
             <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex gap-2 flex-wrap`}>
               <GlassSelect
                 value={modalityFilter}
                 onChange={(e) => setModalityFilter(e.target.value)}
-                options={modalityFilters}
+                options={getModalityFilters(t as unknown as (key: string) => string)}
               />
               <GlassSelect
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                options={statusFilters}
+                options={getStatusFilters(t as unknown as (key: string) => string)}
               />
             </div>
             
@@ -300,7 +303,7 @@ export default function HistoryPage() {
                 const csv = filteredData.map(r => 
                   `${r.patientId},${r.patientName},${r.modality},${r.bodyPart},${r.scanDate},${r.status},${r.diagnosis || ''},${r.confidence || ''}`
                 ).join('\n')
-                const header = 'ID Patient,Nom,Modalite,Region,Date,Statut,Diagnostic,Confiance\n'
+                const header = `${t('history.patientId')},${t('history.patient')},${t('history.modality')},${t('history.bodyPart')},${t('history.date')},${t('history.status')},${t('history.diagnosis')},${t('history.confidence')}\n`
                 const blob = new Blob([header + csv], { type: 'text/csv;charset=utf-8;' })
                 const url = URL.createObjectURL(blob)
                 const link = document.createElement('a')
@@ -311,7 +314,7 @@ export default function HistoryPage() {
               }}
             >
               <Download className="h-4 w-4" />
-              Exporter
+              {t('common.export')}
             </GlassButton>
           </div>
         </div>
@@ -333,7 +336,7 @@ export default function HistoryPage() {
                     onClick={() => handleSort('patientName')}
                     className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
                   >
-                    Patient
+                    {t('history.patient')}
                     <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </th>
@@ -342,7 +345,7 @@ export default function HistoryPage() {
                     onClick={() => handleSort('modality')}
                     className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
                   >
-                    Modality
+                    {t('history.modality')}
                     <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </th>
@@ -351,21 +354,21 @@ export default function HistoryPage() {
                     onClick={() => handleSort('scanDate')}
                     className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
                   >
-                    Scan Date
+                    {t('history.date')}
                     <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </th>
                 <th className="px-4 py-3 text-left">
-                  <span className="text-sm font-medium text-muted-foreground">Status</span>
+                  <span className="text-sm font-medium text-muted-foreground">{t('history.status')}</span>
                 </th>
                 <th className="px-4 py-3 text-left">
-                  <span className="text-sm font-medium text-muted-foreground">Diagnosis</span>
+                  <span className="text-sm font-medium text-muted-foreground">{t('history.diagnosis')}</span>
                 </th>
                 <th className="px-4 py-3 text-left">
-                  <span className="text-sm font-medium text-muted-foreground">Confidence</span>
+                  <span className="text-sm font-medium text-muted-foreground">{t('history.confidence')}</span>
                 </th>
                 <th className="px-4 py-3 text-right">
-                  <span className="text-sm font-medium text-muted-foreground">Actions</span>
+                  <span className="text-sm font-medium text-muted-foreground">{t('common.search')}</span>
                 </th>
               </tr>
             </thead>

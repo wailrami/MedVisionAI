@@ -21,6 +21,8 @@ const features = [
   'Secure data storage',
 ]
 
+import { useLanguage } from '@/components/providers/language-provider'
+
 export default function SignUpPage() {
   const router = useRouter()
   const { signup } = useAuthStore()

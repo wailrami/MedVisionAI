@@ -86,7 +86,7 @@ const mockTasks: Task[] = [
     id: '1',
     title: 'Annotate lung nodules in chest CT',
     type: 'annotation',
-    modality: 'CT',
+    modality: 'CT', 
     difficulty: 'medium',
     reward: 25,
     timeEstimate: '5-10 min',
@@ -99,7 +99,7 @@ const mockTasks: Task[] = [
     difficulty: 'easy',
     reward: 15,
     timeEstimate: '2-5 min',
-    progress: 60,
+    // progress: 60,
   },
   {
     id: '3',
@@ -161,8 +161,8 @@ function ContributeScansTab() {
     accept: {
       'application/dicom': ['.dcm', '.dicom'],
       'application/x-nifti': ['.nii', '.nii.gz'],
-      'image/*': ['.jpg', '.jpeg', '.png'],
-      'application/zip': ['.zip']
+      // 'image/*': ['.jpg', '.jpeg', '.png'],
+      // 'application/zip': ['.zip']
     },
     multiple: true
   })
@@ -293,7 +293,7 @@ function ContributeScansTab() {
           </p>
           
           <div className="flex flex-wrap justify-center gap-2">
-            {["DICOM", "NIfTI", "JPEG/PNG", "ZIP"].map((format) => (
+            {["DICOM", "NIfTI"/*, "JPEG/PNG", "ZIP"*/].map((format) => (
               <span 
                 key={format}
                 className="px-2 py-1 text-xs bg-white/10 rounded-full text-muted-foreground"
@@ -496,11 +496,16 @@ function TasksTab() {
       </div>
 
       <div className="space-y-4">
-        {filteredTasks.map((task, index) => {
-          const TypeIcon = typeIcons[task.type]
-          return (
-            <motion.div
-              key={task.id}
+        { filteredTasks.length === 0 ? (
+          <p className="text-muted-foreground text-center py-4">
+            No tasks available for the selected difficulty.
+          </p>
+        ) : 
+          filteredTasks.map((task, index) => {
+            const TypeIcon = typeIcons[task.type]
+            return (
+              <motion.div
+                key={task.id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -560,6 +565,7 @@ function TasksTab() {
               </div>
             </motion.div>
           )
+          
         })}
       </div>
 
@@ -602,6 +608,8 @@ function TasksTab() {
     </div>
   )
 }
+
+import { useLanguage } from '@/components/providers/language-provider'
 
 export default function CrowdsourcePage() {
   const [activeTab, setActiveTab] = useState('tasks')
