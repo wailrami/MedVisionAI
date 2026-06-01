@@ -17,14 +17,17 @@ import {
   Target,
   Sparkles,
   User,
-  Calendar,
-  Languages
+  Languages,
+  X,
+  FileImage,
+  Play,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GlassCard } from "@/components/ui/glass-card"
 import { AILoader } from "@/components/ui/ai-loader"
+import { PapayaViewer, type AnalysedFile } from "@/components/analysis/papaya-viewer"
 import { MRI2DViewer } from "@/components/analysis/mri-2d-viewer"
 import { Viewer3D } from "@/components/analysis/viewer-3d"
 import { ReportPanel } from "@/components/analysis/report-panel"
@@ -48,6 +51,12 @@ interface PatientInfo {
   modality: string
   bodyRegion: string
   reportLanguage: "fr" | "en" | "ar"
+}
+
+interface UploadedFile {
+  id: string
+  file: File
+  sequence: string
 }
 
 interface Finding {
@@ -76,6 +85,7 @@ interface AnalysisResult {
     studyDate: string
   }
   patientInfo?: PatientInfo
+  analysedFiles?: AnalysedFile[]
 }
 
 // Fake analysis results for demo
@@ -162,7 +172,20 @@ const reportLanguages = [
   { value: "ar", label: "العربية" },
 ]
 
-function UploadStage({ onUpload, t }: { onUpload: (files: File[], patientInfo: PatientInfo) => void, t: ReturnType<typeof useLanguage>["t"] }) {
+const mriSequences = [
+  { value: "t1", label: "T1" },
+  { value: "t1c", label: "T1c (avec contraste)" },
+  { value: "t2", label: "T2" },
+  { value: "t2w", label: "T2w (pondere)" },
+  { value: "flair", label: "FLAIR" },
+  { value: "dwi", label: "DWI (Diffusion)" },
+  { value: "adc", label: "ADC" },
+  { value: "swi", label: "SWI" },
+  { value: "other", label: "Autre" },
+]
+
+
+function UploadStage({ onAnalyse, t }: { onAnalyse: (files: UploadedFile[], patientInfo: PatientInfo) => void, t: ReturnType<typeof useLanguage>["t"] }) {
   const [patientInfo, setPatientInfo] = useState<PatientInfo>({
     fullName: "",
     age: "",
@@ -172,11 +195,16 @@ function UploadStage({ onUpload, t }: { onUpload: (files: File[], patientInfo: P
     reportLanguage: "fr",
   })
 
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0 && patientInfo.fullName && patientInfo.modality && patientInfo.bodyRegion) {
-      onUpload(acceptedFiles, patientInfo)
-    }
-  }, [onUpload, patientInfo])
+    const newFiles: UploadedFile[] = acceptedFiles.map((file, index) => ({
+      id: `file-${Date.now()}-${index}`,
+      file,
+      sequence: ""
+    }))
+    setUploadedFiles(prev => [...prev, ...newFiles])
+  }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -188,7 +216,47 @@ function UploadStage({ onUpload, t }: { onUpload: (files: File[], patientInfo: P
     multiple: true
   })
 
-  const canUpload = patientInfo.fullName && patientInfo.modality && patientInfo.bodyRegion
+  const removeFile = (fileId: string) => {
+    setUploadedFiles(prev => prev.filter(f => f.id !== fileId))
+  }
+
+  const updateFileSequence = (fileId: string, sequence: string) => {
+    setUploadedFiles(prev => prev.map(f => 
+      f.id === fileId ? { ...f, sequence } : f
+    ))
+  }
+
+  const canAnalyse = patientInfo.fullName && 
+                     patientInfo.modality && 
+                     patientInfo.bodyRegion && 
+                     uploadedFiles.length > 0 &&
+                     (patientInfo.modality !== "mri" || uploadedFiles.every(f => f.sequence))
+
+  const handleAnalyse = () => {
+    if (canAnalyse) {
+      onAnalyse(uploadedFiles, patientInfo)
+    }
+  }
+
+  const handleDemoLoad = () => {
+    const demoFiles: UploadedFile[] = [
+      { id: "demo-1", file: new File(["demo"], "brain_t1c.nii.gz"), sequence: "t1c" },
+      { id: "demo-2", file: new File(["demo"], "brain_t2w.nii.gz"), sequence: "t2w" },
+      { id: "demo-3", file: new File(["demo"], "brain_flair.nii.gz"), sequence: "flair" },
+    ]
+    onAnalyse(demoFiles, {
+      fullName: "Patient Demo",
+      age: "45",
+      gender: "male",
+      modality: "mri",
+      bodyRegion: "brain",
+      reportLanguage: "fr"
+    })
+  }
+
+  const isMri = patientInfo.modality === "mri"
+
+  // const canUpload = patientInfo.fullName && patientInfo.modality && patientInfo.bodyRegion
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
@@ -203,7 +271,8 @@ function UploadStage({ onUpload, t }: { onUpload: (files: File[], patientInfo: P
           </div>
           <h1 className="text-3xl font-bold mb-2">{t('analysis.title')}</h1>
           <p className="text-muted-foreground">
-            Remplissez les informations patient puis televersez vos fichiers
+            {/* TODO: apply translation */}
+            Remplissez les informations patient puis televersez vos fichiers 
           </p>
         </div>
 
@@ -304,41 +373,44 @@ function UploadStage({ onUpload, t }: { onUpload: (files: File[], patientInfo: P
           </div>
         </GlassCard>
 
+        {/* Drop zone */}
         <div
           {...getRootProps()}
           className={cn(
-            "relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300",
-            !canUpload && "opacity-50 cursor-not-allowed",
+            "relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300",
+            // !canUpload && "opacity-50 cursor-not-allowed",
             isDragActive 
               ? "border-primary bg-primary/10 scale-[1.02]" 
               : "border-white/20 hover:border-primary/50 hover:bg-white/5"
           )}
         >
-          <input {...getInputProps()} disabled={!canUpload} />
+          {/* <input {...getInputProps()} disabled={!canUpload} /> */}
+          <input {...getInputProps()} />
           
           <motion.div
             animate={isDragActive ? { scale: 1.1 } : { scale: 1 }}
             className="flex flex-col items-center"
           >
             <div className={cn(
-              "w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-colors",
+              "w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors",
               isDragActive ? "bg-primary/20" : "bg-white/10"
             )}>
               <Upload className={cn(
-                "w-10 h-10 transition-colors",
+                "w-8 h-8 transition-colors",
                 isDragActive ? "text-primary" : "text-muted-foreground"
               )} />
             </div>
             
             <h3 className="text-xl font-semibold mb-2">
-              {!canUpload 
-                ? "Remplissez les champs obligatoires (*)" 
-                : isDragActive 
+              {
+                // !canUpload 
+                // ? "Remplissez les champs obligatoires (*)" :
+                isDragActive 
                   ? t('analysis.dragDrop')
                   : t('analysis.dragDrop')
               }
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground text-sm mb-3">
               {t('analysis.orClick')}
             </p>
             
@@ -355,19 +427,85 @@ function UploadStage({ onUpload, t }: { onUpload: (files: File[], patientInfo: P
           </motion.div>
         </div>
 
+        {/* Uploaded files list */}
+        {uploadedFiles.length > 0 && (
+          <GlassCard className="mt-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <FileImage className="w-4 h-4 text-primary" />
+              Fichiers telecharges ({uploadedFiles.length})
+            </h3>
+            <div className="space-y-2 max-h-[200px] overflow-y-auto">
+              {uploadedFiles.map((uploadedFile) => (
+                <div 
+                  key={uploadedFile.id}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10"
+                >
+                  <FileVolume2 className="w-5 h-5 text-primary shrink-0" />
+                  <span className="text-sm flex-1 truncate">{uploadedFile.file.name}</span>
+                  
+                  {isMri && (
+                    <Select
+                      value={uploadedFile.sequence}
+                      onValueChange={(value) => updateFileSequence(uploadedFile.id, value)}
+                    >
+                      <SelectTrigger className="w-[140px] h-8 text-xs">
+                        <SelectValue placeholder="Sequence *" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {mriSequences.map((seq) => (
+                          <SelectItem key={seq.value} value={seq.value}>{seq.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0"
+                    onClick={() => removeFile(uploadedFile.id)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {isMri && !uploadedFiles.every(f => f.sequence) && (
+              <p className="text-xs text-amber-400 mt-3 flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-amber-400" />
+                Selectionnez une sequence pour chaque fichier IRM
+              </p>
+            )}
+          </GlassCard>
+        )}
+
+        {/* Analyse button */}
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button 
+            size="lg"
+            className="gap-2 w-full sm:w-auto"
+            onClick={handleAnalyse}
+            disabled={!canAnalyse}
+          >
+            <Play className="w-5 h-5" />
+            Analyser les images
+          </Button>
+
         {/* Quick demo button */}
-        <div className="mt-6 text-center">
+        
           <Button 
             variant="outline" 
-            className="gap-2"
-            onClick={() => onUpload([new File(["demo"], "demo_scan.dcm")], {
-              fullName: "Patient Demo",
-              age: "45",
-              gender: "male",
-              modality: "mri",
-              bodyRegion: "brain",
-              reportLanguage: "fr"
-            })}
+            className="gap-2  w-full sm:w-auto"
+            onClick={handleDemoLoad}
+            // onClick={() => onUpload([new File(["demo"], "demo_scan.dcm")], {
+            //   fullName: "Patient Demo",
+            //   age: "45",
+            //   gender: "male",
+            //   modality: "mri",
+            //   bodyRegion: "brain",
+            //   reportLanguage: "fr"
+            // })}
           >
             <Sparkles className="w-4 h-4" />
             Charger un Scan Demo
@@ -397,13 +535,13 @@ function UploadStage({ onUpload, t }: { onUpload: (files: File[], patientInfo: P
   )
 }
 
-function ProcessingStage({ progress }: { progress: number }) {
+function ProcessingStage({ progress, t }: { progress: number; t: any }) {
   const stages = [
-    { name: "Analyse des donnees DICOM", threshold: 20 },
-    { name: "Reconstruction du volume", threshold: 40 },
-    { name: "Analyse IA en cours", threshold: 70 },
-    { name: "Generation du rapport", threshold: 90 },
-    { name: "Finalisation", threshold: 100 },
+    { name: t('analysis.processing.extracting'), threshold: 20 },
+    { name: t('analysis.processing.analyzing'), threshold: 40 },
+    { name: t('analysis.processing.detecting'), threshold: 70 },
+    { name: t('analysis.processing.generating'), threshold: 90 },
+    { name: t('analysis.processing.complete'), threshold: 100 },
   ]
   
   const currentStage = stages.find(s => progress < s.threshold) || stages[stages.length - 1]
@@ -417,13 +555,13 @@ function ProcessingStage({ progress }: { progress: number }) {
       >
         <AILoader size="lg" className="mx-auto mb-8" />
         
-        <h2 className="text-2xl font-bold mb-2">Analyse en Cours</h2>
+        <h2 className="text-2xl font-bold mb-2">{t('analysis.processing')}</h2>
         <p className="text-muted-foreground mb-6">{currentStage.name}...</p>
         
         <div className="w-full max-w-sm mx-auto mb-4">
           <Progress value={progress} className="h-2" />
         </div>
-        <p className="text-sm text-muted-foreground">{progress}% complete</p>
+        <p className="text-sm text-muted-foreground">{progress}{t('analysis.processing.complete')}</p>
         
         {/* Processing steps */}
         <div className="mt-8 space-y-2">
@@ -458,9 +596,30 @@ function ProcessingStage({ progress }: { progress: number }) {
   )
 }
 
-function ResultsStage({ result }: { result: AnalysisResult }) {
+function ResultsStage({ result, t }: { result: AnalysisResult; t: any }) {
   const [activeViewer, setActiveViewer] = useState<"2d" | "3d">("2d")
-  
+  const [activeFileId, setActiveFileId] = useState<string | null>(
+    result.analysedFiles?.[0]?.id || null
+  )
+
+  const getSeverityColor = (severity: Finding["severity"]) => {
+    switch (severity) {
+      case "normal": return "text-green-400 bg-green-500/20"
+      case "mild": return "text-yellow-400 bg-yellow-500/20"
+      case "moderate": return "text-orange-400 bg-orange-500/20"
+      case "severe": return "text-red-400 bg-red-500/20"
+    }
+  }
+
+  const getSeverityLabel = (severity: Finding["severity"]) => {
+    switch (severity) {
+      case "normal": return "Normal"
+      case "mild": return "Leger"
+      case "moderate": return "Modere"
+      case "severe": return "Severe"
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header with metadata */}
@@ -468,7 +627,7 @@ function ResultsStage({ result }: { result: AnalysisResult }) {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <CheckCircle2 className="w-6 h-6 text-green-400" />
-            Analyse Terminee
+            {t('analysis.results.title')}
           </h1>
           <p className="text-muted-foreground">
             {result.metadata.scanType} - {result.metadata.studyDate}
@@ -482,10 +641,10 @@ function ResultsStage({ result }: { result: AnalysisResult }) {
       {/* Patient & Scan metadata */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "ID Patient", value: result.metadata.patientId },
-          { label: "Type de Scan", value: result.metadata.scanType },
-          { label: "Coupes", value: result.metadata.sliceCount.toString() },
-          { label: "Dimensions", value: result.metadata.dimensions },
+          { label: t('analysis.results.patientId'), value: result.metadata.patientId },
+          { label: t('analysis.results.scanType'), value: result.metadata.scanType },
+          { label: t('analysis.results.slices'), value: result.metadata.sliceCount.toString() },
+          { label: t('analysis.results.dimensions'), value: result.metadata.dimensions },
         ].map((item, i) => (
           <GlassCard key={i} className="p-4">
             <p className="text-xs text-muted-foreground mb-1">{item.label}</p>
@@ -503,29 +662,34 @@ function ResultsStage({ result }: { result: AnalysisResult }) {
             <TabsList className="grid w-full max-w-sm grid-cols-2">
               <TabsTrigger value="2d" className="gap-2">
                 <Layers className="w-4 h-4" />
-                Visualiseur 2D
+                {t('analysis.results.viewer2D')}
               </TabsTrigger>
               <TabsTrigger value="3d" className="gap-2">
                 <Box className="w-4 h-4" />
-                Visualiseur 3D
+                {t('analysis.results.viewer3D')}
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="2d" className="mt-4">
-              <GlassCard className="p-4 relative">
-                <MRI2DViewer totalSlices={result.metadata.sliceCount} />
-                {/* Coming Soon Overlay */}
+              <GlassCard className="p-4">
+                {/* <MRI2DViewer totalSlices={result.metadata.sliceCount} />
+                {/* Coming Soon Overlay
                 <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-xl">
                   <div className="text-center p-6">
                     <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
                       <Layers className="w-8 h-8 text-primary" />
                     </div>
-                    <h3 className="text-xl font-bold mb-2">Bientot Disponible</h3>
+                    <h3 className="text-xl font-bold mb-2">{t('analysis.results.comingSoon')}</h3>
                     <p className="text-muted-foreground text-sm max-w-xs">
-                      Le visualiseur 2D multi-plans sera disponible dans une prochaine mise a jour.
+                      {t('analysis.results.2DViewerSoon')}
                     </p>
                   </div>
-                </div>
+                </div> */}
+                <PapayaViewer 
+                  files={result.analysedFiles || []}
+                  activeFileId={activeFileId}
+                  onFileSelect={setActiveFileId}
+                />
               </GlassCard>
             </TabsContent>
             
@@ -543,7 +707,7 @@ function ResultsStage({ result }: { result: AnalysisResult }) {
           <GlassCard className="p-4">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Target className="w-4 h-4 text-primary" />
-              Resultats de Detection IA
+              {t('analysis.results.aiDetection')}
             </h3>
             <div className="space-y-3">
               {result.diseases.map((disease, i) => (
@@ -575,13 +739,23 @@ function ResultsStage({ result }: { result: AnalysisResult }) {
           <GlassCard className="p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <Activity className="w-4 h-4 text-primary" />
-              Resultats (Findings)
+              {t('analysis.results.clinicalNotes')}
             </h3>
             <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
               {result.findings.map((finding, index) => (
                 <p key={finding.id}>
-                  <span className="font-medium text-foreground">{index + 1}. {finding.title}:</span>{" "}
-                  {finding.description} ({finding.location})
+                  <span className="font-medium text-foreground">{index + 1}. {finding.title}</span>
+                  {" - "}
+                  <span className={cn(
+                    "text-xs px-1.5 py-0.5 rounded",
+                    getSeverityColor(finding.severity)
+                  )}>
+                    {getSeverityLabel(finding.severity)}
+                  </span>
+                  {": "}
+                  {finding.description}
+                  {" "}
+                  <span className="text-xs italic">({finding.location})</span>
                 </p>
               ))}
             </div>
@@ -591,7 +765,7 @@ function ResultsStage({ result }: { result: AnalysisResult }) {
           <GlassCard className="p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <FileText className="w-4 h-4 text-primary" />
-              Impression
+              {t('analysis.results.recommendations')}
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {result.impression}
@@ -611,19 +785,29 @@ export default function AnalysisPage() {
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState<AnalysisResult | null>(null)
   
-  const handleUpload = useCallback((files: File[], patientInfo: PatientInfo) => {
+  const handleAnalyse = useCallback((files: UploadedFile[], patientInfo: PatientInfo) => {
     setStage("processing")
     setProgress(0)
     
+    // Convert uploaded files to analysed files format
+    const analysedFiles: AnalysedFile[] = files.map(f => ({
+      id: f.id,
+      name: f.file.name,
+      sequence: f.sequence || undefined,
+      file: f.file,
+      url: URL.createObjectURL(f.file)
+    }))
+
     // Simulate processing
     const interval = setInterval(() => {
       setProgress(p => {
         if (p >= 100) {
           clearInterval(interval)
-          // Add patient info to result
-          const resultWithPatient = {
+          // Add patient info and files to result
+          const resultWithPatient: AnalysisResult = {
             ...fakeAnalysisResult,
             patientInfo,
+            analysedFiles,
             metadata: {
               ...fakeAnalysisResult.metadata,
               scanType: getModalities(t).find(m => m.value === patientInfo.modality)?.label || fakeAnalysisResult.metadata.scanType
@@ -648,7 +832,7 @@ export default function AnalysisPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <UploadStage onUpload={handleUpload} t={t} />
+              <UploadStage onAnalyse={handleAnalyse} t={t} />
             </motion.div>
           )}
           
@@ -659,7 +843,7 @@ export default function AnalysisPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <ProcessingStage progress={Math.min(progress, 100)} />
+              <ProcessingStage progress={Math.min(progress, 100)} t={t} />
             </motion.div>
           )}
           
@@ -670,7 +854,7 @@ export default function AnalysisPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <ResultsStage result={result} />
+              <ResultsStage result={result} t={t} />
             </motion.div>
           )}
         </AnimatePresence>

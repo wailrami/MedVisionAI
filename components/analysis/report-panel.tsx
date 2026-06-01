@@ -26,6 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+// import html2canvas from 'html2canvas'
+import dynamic from 'next/dynamic'
 
 interface Finding {
   id: string
@@ -594,6 +596,37 @@ export function ReportPanel({ result }: { result: AnalysisResult }) {
       } else {
         setIsExporting(false)
       }
+
+      // Direct PDF generation without print dialog
+      // if (typeof window === 'undefined') return // Don't run on server
+
+      // const { jsPDF } = await import('jspdf')
+  
+      // // Create temporary div with report content
+      // const tempDiv = document.createElement('div')
+      // tempDiv.innerHTML = htmlContent
+      // tempDiv.style.position = 'absolute'
+      // tempDiv.style.left = '-9999px'
+      // tempDiv.style.width = '210mm' // A4 width for proper layout
+      // document.body.appendChild(tempDiv)
+      
+      // try {
+      //   const pdf = new jsPDF('p', 'mm', 'a4')
+        
+      //   // Convert HTML directly to PDF (not as image)
+      //   await pdf.html(tempDiv, {
+      //     margin: [10, 10, 10, 10],
+      //     // useCORS: true,
+      //     // allowTaint: true,
+      //   })
+        
+      //   pdf.save(filename + '.pdf')
+      //   setIsExporting(false)
+      //   setExportSuccess(true)
+      //   setTimeout(() => setExportSuccess(false), 3000)
+      // } finally {
+      //   document.body.removeChild(tempDiv)
+      // }
     } else {
       // For DOCX, create a proper Word document structure
       const wordContent = `

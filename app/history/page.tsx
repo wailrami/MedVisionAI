@@ -256,7 +256,7 @@ export default function HistoryPage() {
       >
         <h1 className="text-3xl font-bold mb-2">{t('history.title')}</h1>
         <p className="text-muted-foreground">
-          {t('common.loading')}
+          {t('history.subtitle')}
         </p>
       </motion.div>
 
@@ -418,7 +418,7 @@ export default function HistoryPage() {
                       <td className="px-4 py-4">
                         {record.diagnosis ? (
                           <div>
-                            <p className="text-sm truncate max-w-[200px]">{record.diagnosis}</p>
+                            <p className="text-sm truncate max-w-50">{record.diagnosis}</p>
                             {record.severity && (
                               <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs ${severityStyles[record.severity]}`}>
                                 {record.severity}

@@ -316,7 +316,7 @@ function ContributeScansTab() {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 border border-white/10"
               >
                 <ImageIcon className="h-4 w-4 text-primary" />
-                <span className="text-sm truncate max-w-[150px]">{file.name}</span>
+                <span className="text-sm truncate max-w-35.5">{file.name}</span>
                 <button 
                   onClick={(e) => {
                     e.stopPropagation()
@@ -366,7 +366,7 @@ function ContributeScansTab() {
           onChange={(e) => setFindings(e.target.value)}
           placeholder={languageLabels[language].placeholder.findings}
           className={cn(
-            "min-h-[120px] resize-none",
+            "min-h-30 resize-none",
             language === 'ar' && "text-right"
           )}
           dir={dir}
@@ -388,7 +388,7 @@ function ContributeScansTab() {
           onChange={(e) => setImpression(e.target.value)}
           placeholder={languageLabels[language].placeholder.impression}
           className={cn(
-            "min-h-[100px] resize-none",
+            "min-h-25 resize-none",
             language === 'ar' && "text-right"
           )}
           dir={dir}

@@ -144,7 +144,7 @@ export default function DashboardPage() {
                   <p className="text-3xl font-bold">{stats && card.value(stats)}</p>
                   <div className={`flex items-center gap-1 mt-2 text-sm ${
                     card.changeType === 'positive' ? 'text-success' : 
-                    card.changeType === 'negative' ? 'text-destructive' : 'text-muted-foreground'
+                    card.changeType === 'neutral' ? 'text-muted-foreground' : 'text-destructive'
                   }`}>
                     {card.changeType === 'positive' && <TrendingUp className="h-4 w-4" />}
                     <span>{card.change} {t('dashboard.fromLastMonth')}</span>

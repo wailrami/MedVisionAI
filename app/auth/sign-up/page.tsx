@@ -7,25 +7,27 @@ import { motion } from 'framer-motion'
 import { Brain, Mail, Lock, User, Building2, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { GlassCard, GlassButton, GlassInput, GlassSelect } from '@/components/ui/glass-card'
 import { useAuthStore } from '@/lib/store'
-
-const roleOptions = [
-  { value: 'radiologist', label: 'Radiologist' },
-  { value: 'clinic', label: 'Clinic Administrator' },
-  { value: 'hospital', label: 'Hospital Administrator' },
-]
-
-const features = [
-  'AI-powered image analysis',
-  '3D scan visualization',
-  'Multi-language reports',
-  'Secure data storage',
-]
-
 import { useLanguage } from '@/components/providers/language-provider'
+import { Languages } from 'lucide-react'
+import { locales } from '@/lib/i18n'
 
 export default function SignUpPage() {
   const router = useRouter()
   const { signup } = useAuthStore()
+  const { t, locale, setLocale } = useLanguage()
+  
+  const getRoleOptions = () => [
+    { value: 'radiologist', label: t('signup.roleRadiologist') },
+    { value: 'clinic', label: t('signup.roleClinic') },
+    { value: 'hospital', label: t('signup.roleHospital') },
+  ]
+
+  const getFeatures = () => [
+    t('signup.features'),
+    t('signup.features3d'),
+    t('signup.featuresMultilingual'),
+    t('signup.featuresSecure'),
+  ]
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -64,13 +66,13 @@ export default function SignUpPage() {
     setError(null)
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+      setError(t('signup.passwordNotMatch'))
       setLoading(false)
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
+      setError(t('signup.passwordTooShort'))
       setLoading(false)
       return
     }
@@ -86,7 +88,7 @@ export default function SignUpPage() {
     if (result.success) {
       router.push('/dashboard')
     } else {
-      setError(result.error || 'Signup failed')
+      setError(result.error || t('signup.signupFailed'))
     }
     
     setLoading(false)
@@ -106,26 +108,46 @@ export default function SignUpPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-4xl"
       >
-        {/* Logo */}
-        <Link href="/" className="flex items-center justify-center gap-2 mb-8">
-          <motion.div
-            className="p-2 rounded-lg bg-primary/10"
-            whileHover={{ scale: 1.05 }}
-          >
-            <Brain className="h-8 w-8 text-primary" />
-          </motion.div>
-          <span className="font-bold text-2xl gradient-text">MedVision AI</span>
-        </Link>
+        {/* Header with Language Toggle */}
+        <div className="flex items-center justify-between mb-8">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <motion.div
+              className="p-2 rounded-lg bg-primary/10"
+              whileHover={{ scale: 1.05 }}
+            >
+              <Brain className="h-8 w-8 text-primary" />
+            </motion.div>
+            <span className="font-bold text-2xl gradient-text">MedVision AI</span>
+          </Link>
+
+          {/* Language Toggle */}
+          <div className="flex items-center gap-2 bg-card/50 backdrop-blur rounded-lg p-1 border border-border">
+            {locales.map((loc) => (
+              <button
+                key={loc}
+                onClick={() => setLocale(loc)}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  locale === loc
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {loc.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left - Features */}
           <GlassCard className="hidden lg:block">
-            <h2 className="text-2xl font-bold mb-6">Start Your Free Trial</h2>
+            <h2 className="text-2xl font-bold mb-6">{t('signup.trialTitle')}</h2>
             <p className="text-muted-foreground mb-8">
-              Get 14 days of full access to all features. No credit card required.
+              {t('signup.trialSubtitle')}
             </p>
             <ul className="space-y-4">
-              {features.map((feature) => (
+              {getFeatures().map((feature) => (
                 <li key={feature} className="flex items-center gap-3">
                   <div className="p-1 rounded-full bg-success/20">
                     <CheckCircle2 className="h-4 w-4 text-success" />
@@ -135,16 +157,16 @@ export default function SignUpPage() {
               ))}
             </ul>
             <div className="mt-12 p-4 rounded-lg bg-primary/10">
-              <p className="text-sm text-muted-foreground mb-2">Trusted by</p>
-              <p className="font-semibold">500+ Healthcare Professionals</p>
+              <p className="text-sm text-muted-foreground mb-2">{t('signup.trustedBy')}</p>
+              <p className="font-semibold">{t('signup.professionals')}</p>
             </div>
           </GlassCard>
 
           {/* Right - Form */}
           <GlassCard variant="strong">
             <div className="text-center mb-8 lg:text-left">
-              <h1 className="text-2xl font-bold mb-2">Create Your Account</h1>
-              <p className="text-muted-foreground">Join thousands of healthcare professionals</p>
+              <h1 className="text-2xl font-bold mb-2">{t('signup.title')}</h1>
+              <p className="text-muted-foreground">{t('signup.subtitle')}</p>
             </div>
 
             {error && (
@@ -160,7 +182,7 @@ export default function SignUpPage() {
 
             <form onSubmit={handleSignUp} className="space-y-5">
               <GlassInput
-                label="Full Name"
+                label={t('signup.fullName')}
                 type="text"
                 name="fullName"
                 placeholder="Dr. Jane Smith"
@@ -171,7 +193,7 @@ export default function SignUpPage() {
               />
 
               <GlassInput
-                label="Email"
+                label={t('signup.email')}
                 type="email"
                 name="email"
                 placeholder="you@hospital.com"
@@ -183,7 +205,7 @@ export default function SignUpPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <GlassInput
-                  label="Password"
+                  label={t('signup.password')}
                   type="password"
                   name="password"
                   placeholder="Min. 8 characters"
@@ -194,7 +216,7 @@ export default function SignUpPage() {
                 />
 
                 <GlassInput
-                  label="Confirm Password"
+                  label={t('signup.confirmPassword')}
                   type="password"
                   name="confirmPassword"
                   placeholder="Confirm password"
@@ -207,15 +229,15 @@ export default function SignUpPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <GlassSelect
-                  label="Role"
+                  label={t('signup.role')}
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  options={roleOptions}
+                  options={getRoleOptions()}
                 />
 
                 <GlassInput
-                  label="Institution (Optional)"
+                  label={`${t('signup.institution')} (${t('common.optional')})`}
                   type="text"
                   name="institution"
                   placeholder="Hospital or Clinic"
@@ -231,7 +253,7 @@ export default function SignUpPage() {
                 size="lg"
                 loading={loading}
               >
-                Create Account
+                {t('signup.signUp')}
                 <ArrowRight className="h-5 w-5" />
               </GlassButton>
 
@@ -240,7 +262,7 @@ export default function SignUpPage() {
                   <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or</span>
+                  <span className="bg-card px-2 text-muted-foreground">{t('common.or')}</span>
                 </div>
               </div>
 
@@ -252,15 +274,15 @@ export default function SignUpPage() {
                 onClick={handleDemoLogin}
                 loading={loading}
               >
-                Quick Demo Login
+                {t('signup.demoLogin')}
               </GlassButton>
             </form>
 
             <div className="mt-6 pt-6 border-t border-border text-center">
               <p className="text-muted-foreground">
-                Already have an account?{' '}
+                {t('signup.alreadyHaveAccount')}{' '}
                 <Link href="/auth/login" className="text-primary hover:underline font-medium">
-                  Sign in
+                  {t('signup.login')}
                 </Link>
               </p>
             </div>

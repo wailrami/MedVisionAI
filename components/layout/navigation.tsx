@@ -163,7 +163,7 @@ export function Navbar() {
                   <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <User className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="hidden md:block text-sm font-medium max-w-[100px] truncate">
+                  <span className="hidden md:block text-sm font-medium max-w-25 truncate">
                     {user.fullName.split(' ')[0]}
                   </span>
                   <ChevronDown className={cn(

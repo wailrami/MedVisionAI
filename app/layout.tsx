@@ -55,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
-      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased bg-background`}>
+      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased bg-background`} suppressHydrationWarning>
         <LanguageProvider>
           <ThemeProvider>
             <Navbar />

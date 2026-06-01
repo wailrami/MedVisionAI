@@ -8,11 +8,12 @@ import { Brain, Mail, Lock, ArrowRight, AlertCircle, Info } from 'lucide-react'
 import { GlassCard, GlassButton, GlassInput } from '@/components/ui/glass-card'
 import { useAuthStore } from '@/lib/store'
 import { useLanguage } from '@/components/providers/language-provider'
+import { locales } from '@/lib/i18n'
 
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuthStore()
-  const { t } = useLanguage()
+  const { t, locale, setLocale } = useLanguage()
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -29,7 +30,7 @@ export default function LoginPage() {
     if (result.success) {
       router.push('/dashboard')
     } else {
-      setError(result.error || 'Login failed')
+      setError(result.error || t('login.loginFailed'))
     }
     
     setLoading(false)
@@ -46,7 +47,7 @@ export default function LoginPage() {
     if (result.success) {
       router.push('/dashboard')
     } else {
-      setError(result.error || 'Login failed')
+      setError(result.error || t('login.loginFailed'))
     }
     
     setLoading(false)
@@ -66,16 +67,36 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        {/* Logo */}
-        <Link href="/" className="flex items-center justify-center gap-2 mb-8">
-          <motion.div
-            className="p-2 rounded-lg bg-primary/10"
-            whileHover={{ scale: 1.05 }}
-          >
-            <Brain className="h-8 w-8 text-primary" />
-          </motion.div>
-          <span className="font-bold text-2xl gradient-text">MedVision AI</span>
-        </Link>
+        {/* Header with Language Toggle */}
+        <div className="flex items-center justify-between mb-8">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <motion.div
+              className="p-2 rounded-lg bg-primary/10"
+              whileHover={{ scale: 1.05 }}
+            >
+              <Brain className="h-8 w-8 text-primary" />
+            </motion.div>
+            <span className="font-bold text-2xl gradient-text">MedVision AI</span>
+          </Link>
+
+          {/* Language Toggle */}
+          <div className="flex items-center gap-2 bg-card/50 backdrop-blur rounded-lg p-1 border border-border">
+            {locales.map((loc) => (
+              <button
+                key={loc}
+                onClick={() => setLocale(loc)}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  locale === loc
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {loc.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <GlassCard variant="strong">
           <div className="text-center mb-8">
@@ -155,7 +176,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or</span>
+                <span className="bg-card px-2 text-muted-foreground">{t('common.or')}</span>
               </div>
             </div>
 
